@@ -1,28 +1,27 @@
 package net.nuttle.service;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import net.nuttle.bo.BeanA;
 
-import org.junit.Before;
+import org.apache.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import net.nuttle.bo.BeanA;
-
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(AService.class)
+@PrepareForTest({AService.class, AbstractAService.class})
 public class AServiceTest {
 
-  
+  private static final Logger LOG = Logger.getLogger(AServiceTest.class);
 
   /**
    * Attempts to mock a static method in an interface have proven fruitless.
@@ -32,6 +31,8 @@ public class AServiceTest {
    * It appears that currently you simply can't mock an interface static method.
    * @throws Exception
    */
+  @Ignore
+  @SuppressWarnings("unchecked")
   @Test
   public void testService1() throws Exception {
     PowerMockito.mockStatic(AService.class, Answers.CALLS_REAL_METHODS.get());
@@ -43,12 +44,12 @@ public class AServiceTest {
       .doAnswer(new Answer<Object>() {
         @Override
         public Object answer(InvocationOnMock iom) {
-          System.out.println("MOCKED!");
+          LOG.debug("MOCKED!");
           return null;
         }
       })
       .when(AService.class, "service1", null, "ghi");
-    System.out.println("Ready to start");
+    LOG.debug("Ready to start");
     //BeanA<String, String> bean = new BeanA<>("abc", "def");
     BeanA<String, String> bean = Mockito.mock(BeanA.class);
     Mockito.doAnswer(new Answer<Object>() {
@@ -59,7 +60,37 @@ public class AServiceTest {
       }
     }).when(bean).setU(anyString());
     AService.service1(bean, "ghi");
-    System.out.println(bean.getU());
+    LOG.debug("Bean U value: " + bean.getU());
   }
-
+/*
+  @Test
+  public void testService2() throws Exception {
+    AService service = PowerMockito.mock(AService.class);
+    PowerMockito.doAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(InvocationOnMock iom) {
+        LOG.debug("MOCKED");
+        return null;
+      }
+    }).when(service).service2(any(BeanA.class), anyObject());
+  }
+*/  
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testService3() throws Exception {
+    PowerMockito.mockStatic(AbstractAService.class, Answers.CALLS_REAL_METHODS.get());
+    PowerMockito
+      .doAnswer(new Answer<Object>() {
+        @Override
+        public Object answer(InvocationOnMock iom) {
+          LOG.debug("MOCKED, new U value: " + iom.getArguments()[1]);
+          ((BeanA<String, String>) iom.getArguments()[0]).setU("other");
+          return null;
+        }
+      }).when(AbstractAService.class, "service3", any(BeanA.class), anyString());;
+    BeanA<String, String> bean = new BeanA<>("abc", "def");
+    AbstractAService.service3(bean, "ghi");
+    LOG.debug("Bean U: " + bean.getU());
+  }
+  
 }
