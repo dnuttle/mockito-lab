@@ -11,4 +11,6 @@ public interface AService {
   }
   
   <T, U> void service2(BeanA<T, U> bean, U newValue);
+  
+  <T, U> void service3(BeanA<T, U> bean, U newValue);
 }

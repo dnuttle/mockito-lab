@@ -77,7 +77,7 @@ public class AServiceTest {
 */  
   @SuppressWarnings("unchecked")
   @Test
-  public void testService3() throws Exception {
+  public void testServiceStatic() throws Exception {
     PowerMockito.mockStatic(AbstractAService.class, Answers.CALLS_REAL_METHODS.get());
     PowerMockito
       .doAnswer(new Answer<Object>() {
@@ -87,10 +87,51 @@ public class AServiceTest {
           ((BeanA<String, String>) iom.getArguments()[0]).setU("other");
           return null;
         }
-      }).when(AbstractAService.class, "service3", any(BeanA.class), anyString());;
+      }).when(AbstractAService.class, "serviceStatic", any(BeanA.class), anyString());
     BeanA<String, String> bean = new BeanA<>("abc", "def");
-    AbstractAService.service3(bean, "ghi");
+    AbstractAService.serviceStatic(bean, "ghi");
     LOG.debug("Bean U: " + bean.getU());
   }
   
+  /**
+   * First mocks a static factory method to get a service,
+   * which returns a mocked factory; it in turn returns a service
+   * with a mocked method.
+   * @throws Exception
+   */
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testServiceFactory() throws Exception {
+    PowerMockito.mockStatic(AbstractAService.class, Answers.CALLS_REAL_METHODS.get());
+    PowerMockito
+      .doAnswer(new Answer<Object>() {
+        @Override
+        public Object answer(InvocationOnMock iom) throws Exception {
+          LOG.debug("Return mocked service");
+          AServiceImpl service = PowerMockito.mock(AServiceImpl.class, Answers.CALLS_REAL_METHODS.get());
+          PowerMockito.doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock iom) {
+              LOG.debug("Mocked within testServiceFactory");
+              BeanA<String, String> bean = iom.getArgumentAt(0, BeanA.class);
+              bean.setU("mocked");
+              return null;
+            }
+//          }).when(service, "service3", any(BeanA.class), any());
+          }).when(service).service3(any(BeanA.class), anyString());
+          return service;
+        }
+      }).when(AbstractAService.class, "serviceFactory");
+    AService service = AbstractAService.serviceFactory();
+    BeanA<String, String> bean = new BeanA<>();
+    service.service3(bean, "abc");
+    LOG.debug("After service3: " + bean.getU());
+    service.service2(new BeanA<String, String>(), "123");
+    service = AbstractAService.serviceFactory();
+    BeanA<String, String> bean2 = new BeanA<>("123", "456");
+    service.service2(bean2, "789");
+    LOG.debug("After service2: " + bean2.getU());
+  }
+
+
 }
