@@ -118,7 +118,7 @@ public class AServiceTest {
               return null;
             }
 //          }).when(service, "service3", any(BeanA.class), any());
-          }).when(service).service3(any(BeanA.class), anyString());
+          }).when(service).service3(any(), any());
           return service;
         }
       }).when(AbstractAService.class, "serviceFactory");
