@@ -1,9 +1,7 @@
 package net.nuttle.service;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
-import net.nuttle.bo.BeanA;
 
 import org.apache.log4j.Logger;
 import org.junit.Ignore;
@@ -16,6 +14,8 @@ import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import net.nuttle.bo.BeanA;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({AService.class, AbstractAService.class})
